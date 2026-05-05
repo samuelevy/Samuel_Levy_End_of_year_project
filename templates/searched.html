@@ -1,0 +1,73 @@
+<!-- Acessible at http://127.0.0.1:8000/searched/ -->
+{% extends "homepage.html" %}
+{% load static %}
+
+{% block title %}Search Results - QMRANK{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/searched.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- Blue Navbar -->
+<nav class="top-navbar">
+    <div class="nav-container">
+        <div class="nav-logo">QMRANK</div>
+        <div class="nav-search">
+            <form action="{% url 'searched' %}" method="POST">
+                {% csrf_token %}
+                <input type="text" name="search" placeholder="Search again..." required>
+                <button type="submit">Search</button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<div class="search-page-wrapper">
+    <!-- Search Info Bar (Horizontal Middle, Under Navbar) -->
+    <div class="search-info-bar">
+        <a href="{% url 'home' %}" class="btn-back">← Go Back</a>
+        {% if query %}
+            <span>Showing results for: <strong>"{{ query }}"</strong> ({{ count }} found)</span>
+        {% else %}
+            <span>Enter a search query to find users</span>
+        {% endif %}
+    </div>
+
+    <!-- Central Icon -->
+    <div class="central-icon">
+        <span class="icon-circle">🔍</span>
+    </div>
+
+    <div class="results-container">
+        {% if users %}
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>User ID</th>
+                        <th>Name</th>
+                        <th>Role</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.user_id }}</td>
+                        <td>{{ user.name }}</td>
+                        <td>{{ user.role }}</td>
+                        <td>
+                            <a href="{% url 'profile' user.user_id %}" class="user-link">View Profile</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% elif query %}
+            <div class="no-results-box">
+                <p>😕 No users found matching "{{ query }}"</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

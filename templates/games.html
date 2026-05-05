@@ -1,0 +1,210 @@
+<!-- Accessed through http://127.0.0.1:8000/game/api/record-game/-->
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Record Game - QMRank</title>
+    <link rel="stylesheet" href="{% static 'css/games.css' %}">
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header class="navbar">
+        <p class="ranktitle">QMRank</p>
+        <div class="nav-right">
+            <div class="search-container">
+                <form action="{%url 'searched' %}" method="POST" class="search-form">
+                    {% csrf_token %}
+                    <input type="text" placeholder="Search players..." class="search-input" name="search">
+                    <button type="submit" id="searchBtn" class="btn-search">Search 🔎</button>
+                </form>
+            </div>
+        </div>
+    </header>
+
+    <main class="game-container">
+        <div class="form-card">
+            <h1>Record New Game</h1>
+            <p class="subtitle">Search and select players to update rankings</p>
+
+            <!-- Record Game Form -->
+            <form method="POST" id="gameForm">
+                {% csrf_token %}
+
+                <!-- Player 1 Search -->
+                <div class="input-group">
+                    <label>Player 1</label>
+                    <input type="text" id="p1-search" placeholder="Type name or ID..." autocomplete="off">
+                    <input type="hidden" name="player1_id" id="p1-id-hidden">
+                    <div id="p1-results" class="dropdown-results"></div>
+                </div>
+
+                <!-- Player 2 Search -->
+                <div class="input-group">
+                    <label>Player 2</label>
+                    <input type="text" id="p2-search" placeholder="Type name or ID..." autocomplete="off">
+                    <input type="hidden" name="player2_id" id="p2-id-hidden">
+                    <div id="p2-results" class="dropdown-results"></div>
+                </div>
+
+                <!-- Outcome Selection -->
+                <div class="input-group">
+                    <label>Game Outcome</label>
+                    <select name="outcome" required>
+                        <option value="" disabled selected>Select Result</option>
+                        <option value="1">Player 1 Wins</option>
+                        <option value="2">Player 2 Wins</option>
+                        <option value="0">Draw</option>
+                    </select>
+                </div>
+
+                <div class="button-row">
+                    <button type="submit" class="btn-submit">Record Game</button>
+                    <a href="{% url 'admin_dashboard' %}" class="btn-back-main">← Back</a>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        function getcookie(name){
+            let cookieValue=null;
+            if(document.cookie && document.cookie !== ''){
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie=cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        const csrftoken = getcookie('csrftoken');
+
+        function setupLiveSearch(inputId, resultsId, hiddenInputId) {
+            const input = document.getElementById(inputId);
+            const resultsDiv = document.getElementById(resultsId);
+            const hiddenInput = document.getElementById(hiddenInputId);
+            let searchTimeout;
+
+            input.addEventListener('input', function() {
+                const query = this.value.trim();
+                clearTimeout(searchTimeout);
+
+                if (query.length < 2) {
+                    resultsDiv.innerHTML = '';
+                    resultsDiv.style.display = 'none';
+                    hiddenInput.value = '';
+                    return;
+                }
+
+                searchTimeout = setTimeout(() => {
+                    fetch(`/game/api/search-players/?q=${encodeURIComponent(query)}`, {
+                        method: 'GET',
+                        headers: {
+                            'X-CSRFToken': csrftoken, 
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'same-origin'
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Search results:', data);
+                        resultsDiv.innerHTML = '';
+                        
+                        if (data.players && data.players.length > 0) {
+                            resultsDiv.style.display = 'block';
+                            data.players.forEach(player => {
+                                const div = document.createElement('div');
+                                div.classList.add('result-item');
+                                div.innerHTML = `<strong>${player.name}</strong> (ID: ${player.id}) - ${player.elo} ELO`;
+                                div.onclick = function() {
+                                    input.value = player.name;
+                                    hiddenInput.value = player.id;
+                                    resultsDiv.innerHTML = '';
+                                    resultsDiv.style.display = 'none';
+                                };
+                                resultsDiv.appendChild(div);
+                            });
+                        } else {
+                            resultsDiv.style.display = 'block';
+                            resultsDiv.innerHTML = '<div class="result-item">No players found</div>';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Search error:', error);
+                        resultsDiv.innerHTML = '<div class="result-item" style="color:red;">Search failed</div>';
+                        resultsDiv.style.display = 'block';
+                    });
+                }, 300); 
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!input.contains(e.target) && !resultsDiv.contains(e.target)) {
+                    resultsDiv.style.display = 'none';
+                }
+            });
+        }
+
+         
+
+        // Initialize search for both players
+        setupLiveSearch('p1-search', 'p1-results', 'p1-id-hidden');
+        setupLiveSearch('p2-search', 'p2-results', 'p2-id-hidden');
+
+        document.getElementById('gameForm').addEventListener('submit', function(e) {
+            e.preventDefault();  // Stops normal form submission (page reload)
+            
+            const formData = new FormData(this);
+            
+            // Validate both players are selected
+            if (!formData.get('player1_id') || !formData.get('player2_id')) {
+                alert('Please select both players!');
+                return;
+            }
+
+            fetch('/game/api/record-game/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken
+                },
+                body: formData,  // Sends form data
+                credentials: 'same-origin'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(`✅ Game recorded successfully!\n\n` +
+                        `${data.details.player1} vs ${data.details.player2}\n` +
+                        `Result: ${data.details.outcome}\n\n` +
+                        `New Ratings:\n` +
+                        `${data.details.player1}: ${data.details.new_ratings.p1_elo} ELO\n` +
+                        `${data.details.player2}: ${data.details.new_ratings.p2_elo} ELO`);
+                    
+                    // Reset form
+                    this.reset();
+                    document.getElementById('p1-id-hidden').value = '';
+                    document.getElementById('p2-id-hidden').value = '';
+                } else {
+                    alert('Error: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Submit error:', error);
+                alert('Failed to record game: ' + error.message);
+            });
+        });
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,147 @@
+/* General Page Styling */
+body {
+    background-color: #736563;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    color: white;
+}
+
+/* Navbar */
+.top-navbar {
+    background-color: #5A93F2;
+    padding: 10px 20px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+.nav-container {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav-logo {
+    font-size: 24px;
+    font-weight: bold;
+    color: white;
+    letter-spacing: 1px;
+}
+
+.nav-search form {
+    display: flex;
+    gap: 5px;
+}
+
+.nav-search input {
+    padding: 8px;
+    border-radius: 4px;
+    border: none;
+}
+
+.nav-search button {
+    background-color: black;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.nav-search button:hover{
+    background-color: white;
+    color: black;
+    border: 1px solid black;
+}
+
+/* Info Bar */
+.search-info-bar {
+    background-color: rgba(255, 255, 255, 0.1);
+    width: 60%;
+    margin: 20px auto;
+    padding: 15px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+.btn-back {
+    background-color: #5A93F2;
+    color: white;
+    text-decoration: none;
+    padding: 5px 12px;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.btn-back:hover{
+    background-color: white;
+    color: #5A93F2;
+    border: solid 1px black
+}
+
+/* Icon */
+.central-icon {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.icon-circle {
+    font-size: 50px;
+    background: #5A93F2;
+    width: 80px;
+    height: 80px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+/* Table Styling */
+.results-container {
+    width: 80%;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+}
+
+.results-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.results-table th, .results-table td {
+    border: 2px solid #5A93F2; /* Your specified blue lines */
+    padding: 12px;
+    text-align: center;
+}
+
+.results-table th {
+    background-color: #5A93F2;
+    color: white;
+}
+
+.user-link {
+    color: #5A93F2;
+    text-decoration: none;
+    font-weight: bold;
+    background: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.user-link:hover{
+    background-color: #5A93F2;
+    color:white
+}
+
+.no-results-box {
+    text-align: center;
+    padding: 40px;
+    font-style: italic;
+}

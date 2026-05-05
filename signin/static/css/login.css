@@ -1,0 +1,86 @@
+body{
+    background-color:#736563;
+    font-family: Arial, sans-serif;
+    color: white;
+}
+
+.head{
+    display: flex;
+    padding: 20px 40px;
+    align-items: center;
+    background-color: #81a9ef;
+    border-bottom: 2px solid black;
+    position: relative;
+    padding: 40px 40px;
+}
+
+.title {
+    font-size: 2rem;
+    font-weight: bold;
+    align-items: center;
+    text-align: center;
+}
+
+.login-title{
+    position: absolute;
+    text-align: center;
+    align-items: center;
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0;
+    text-decoration: underline;
+}
+
+form{
+    display: flex;
+    align-items: center;
+    text-align: center;
+    flex-direction: column;
+    margin-top: 30px;
+    justify-content: center;
+    background-color: rgb(58, 58, 58);
+    border: 2px solid #81a9ef;
+    padding: 20px;
+    border-radius: 10px;
+    aspect-ratio: 1.5/1; /* Makes the form */
+    width: 300pt;
+    margin: 30px auto; /* Centers the form */
+}
+
+.logbtn{
+    background-color: #81a9ef;
+    color: black;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5%;
+}
+
+.logbtn:hover{
+    background-color: #597cbd;
+    cursor: pointer;
+}
+
+.messages {
+    margin-bottom: 15px;
+}
+
+.message {
+    color: #b00020;
+    background: #ffe5e5;
+    padding: 10px;
+    border-radius: 6px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.signup {
+    margin-top: 15px;
+    color: #81a9ef;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.signup:hover {
+    color: #597cbd;
+    text-decoration: underline;
+}

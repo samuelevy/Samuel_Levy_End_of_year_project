@@ -1,0 +1,102 @@
+<!--http://127.0.0.1:8000-->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Leaderboard - Homepage{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/admin_home.css' %}">
+
+</head>
+<body class="{% block body_class %}{% endblock %}">
+    {% block content %}
+        <!-- Header Navigation -->
+        <header class="navbar">
+            <p class="ranktitle">QMRank</p>
+            <div class="nav-right">
+                <div class="search-container">
+                    <a href="{% url 'admin_dashboard' %}" id="leaderboardBtn" class="btn-leaderboard">Leaderboard🏆</a>
+                    <button id="searchBtn" class="btn-search">Search 🔎</button>
+                    <a href="{% url 'game:record_game_page' %}" id="startgameBtn" class="btn-startgame">Start Game🎮</a>
+
+                    <div id="searchMenu" class="search-dropdown">
+                        <form action="{% url 'searched' %}" method="POST" class="search-form">
+                            {% csrf_token %}
+                            <input type="text" 
+                                placeholder="Search players..." 
+                                class="search-input" 
+                                name="search"
+                                autocomplete="off">
+                            <button type="submit" class="btn-submit">Search</button>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="content">
+            <h1>&#128081; Leaderboard</h1> <!-- Emoji for presentation -->
+            <table class="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Player Name</th>
+                        <th>Glicko</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Django Backend Method -->
+                    {% for player in players %}
+                    <tr>
+                        <td>{{ player.rank }}</td>
+                        <td>
+                            <a href="{% url 'user:user_profile' player.user_id %}" class="searchplayer">
+                                {{ player.name }}
+                            </a>
+                        </td>
+                        <td>{{ player.glicko }}</td>
+                    </tr>
+                    {% empty %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </main>
+
+        <script>
+            // Toggle search dropdown when clicking the search button
+            const searchBtn = document.getElementById('searchBtn');
+            const searchMenu = document.getElementById('searchMenu');
+            const searchInput = searchMenu.querySelector('.search-input');
+
+            searchBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                searchMenu.classList.toggle('show');
+                
+                if (searchMenu.classList.contains('show')) {
+                    searchInput.focus();
+                }
+            });
+
+            searchMenu.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+
+            window.addEventListener('click', () => {
+                searchMenu.classList.remove('show');
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    searchMenu.classList.remove('show');
+                }
+            });
+        </script>
+
+
+
+    {% endblock %}
+</body>
+</html>

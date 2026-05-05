@@ -1,0 +1,192 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>QMRank - Profile</title>
+    <link rel="stylesheet" href="{% static 'css/profile.css' %}">
+</head>
+<body>
+
+<!-- Header Navigation -->
+<header class="navbar">
+    <div class="nav-left">
+        {% if request.user.role != 'ADMIN' %}
+            <a href="{% url 'profile' %}" class="btn-profile">
+                {{ request.user.name }}
+            </a>
+        {% endif %}
+        <a href="{% url 'logout' %}" class="btn-logout">Logout</a>
+        <a href="{% url 'home' %}" class="btn-back">⬅ Back</a>
+    </div>
+
+    <p class="ranktitle">QMRank</p>
+    <div class="nav-right">
+        <div class="search-container">
+            <form action="{% url 'searched' %}" method="POST" class="search-form">
+                {% csrf_token %}
+                <input type="text" placeholder="Search player..." 
+                       class="search-input" name="search">
+                <button type="submit" class="btn-search">Search 🔎</button>
+            </form>
+        </div>
+    </div>
+</header>
+
+<!-- Profile Content -->
+<div class="profile-container">
+    <div class="profile-header">
+        <h1 class="username">
+            {{ profile_data.name }}
+            <span class="userid"> - {{ profile_data.user_id }}</span>
+        </h1>
+        <div class="actions">
+        {% if request.user.user_id == profile_data.user_id %}
+            <button onclick="showChangeUsernameModal()" class="userchange">
+                ✏️ Change Username
+            </button>
+        {% endif %}
+
+        {% if request.user.role == 'ADMIN' and profile_data.user_id != request.user.user_id %}
+            <form method="POST" action="{% url 'user_admin:user-make-admin' profile_data.user_id %}" onsubmit="return confirm('Are you sure you want to promote {{ profile_data.name }} to admin? This will remove them from the player leaderboard.');"style="margin-top: 1rem;">
+                {% csrf_token %}
+                <button type="submit" class="promote">👑 Promote to Admin</button>
+            </form>
+
+            <form method="POST" action="{% url 'user_admin:user-delete' profile_data.user_id %}" onsubmit="return confirm('Are you sure you want to delete {{ profile_data.name }}? This action cannot be undone.');" style="margin-top: 0.5rem;">
+                {% csrf_token %}
+                <input type="hidden" name="_method" value="DELETE">
+                <button type="submit" class="delete">Delete User</button>
+            </form>
+        {% endif %}
+        </div>
+    </div>
+    <!-- Rank / Glicko / Elo Table -->
+    <div class="rating-table">
+        <table>
+            <tr>
+                <th>Rank</th>
+                <th>Glicko</th>
+                <th>Elo</th>
+            </tr>
+            <tr>
+                <td>{{ profile_data.rank }}</td>
+                <td>{{ profile_data.glicko }}</td>
+                <td>{{ profile_data.elo }}</td>
+            </tr>
+        </table>
+    </div>
+    <div class="stats-section">
+        <div class="stats-left">
+            <div class="gamecount">
+                {{ profile_data.game_count }}
+            </div>
+            <div class="label-small">
+                Games Played
+            </div>
+
+            <div class="winrate">
+                {{ profile_data.winrate|floatformat:1 }}%
+            </div>
+            <div class="label-small">
+                Win Rate
+            </div>
+        </div>
+        <div class="stats-right">
+            <div class="label-small">
+                Last Game Played
+            </div>
+            <div class="last-game">
+                {{ profile_data.last_game_date|date:"d/m/y - H:i"|default:"No games played" }}
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>
+
+
+<div id="changeUsernameModal" class="modal" style="display:none;">
+    <div class="modal-content">
+        <span class="close" onclick="closeChangeUsernameModal()">&times;</span>
+        <h2>Change Username</h2>
+        <form id="changeUsernameForm">
+            {% csrf_token %}
+            <input type="text" 
+                   id="newUsername" 
+                   name="new_username" 
+                   placeholder="Enter new username"
+                   value="{{ profile_data.name }}"
+                   required
+                   minlength="3">
+            <div id="usernameError" class="error-message"></div>
+            <button type="submit" class="btn-submit">Save</button>
+            <button type="button" onclick="closeChangeUsernameModal()" class="btn-cancel">Cancel</button>
+        </form>
+    </div>
+</div>
+
+<script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function showChangeUsernameModal() {
+    document.getElementById('changeUsernameModal').style.display = 'block';
+    document.getElementById('newUsername').focus();
+}
+
+function closeChangeUsernameModal() {
+    document.getElementById('changeUsernameModal').style.display = 'none';
+    document.getElementById('usernameError').textContent = '';
+}
+
+document.getElementById('changeUsernameForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const newUsername = document.getElementById('newUsername').value.trim();
+    const userId = {{ profile_data.user_id }};
+    
+    fetch(`/user/${userId}/change/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ name: newUsername })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            document.getElementById('usernameError').textContent = data.error;
+        } else {
+            alert('Username changed successfully!');
+            location.reload(); //Show new
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('usernameError').textContent = 'Failed to change username';
+    });
+});
+
+window.onclick = function(event) {
+    const modal = document.getElementById('changeUsernameModal');
+    if (event.target == modal) {
+        closeChangeUsernameModal();
+    }
+}
+</script>

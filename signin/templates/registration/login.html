@@ -1,0 +1,43 @@
+<!-- Acessed via http://127.0.0.1:8000/signin/login/ -->
+{% extends "homepage.html" %}
+{% load static %}
+{% block title %}Login{% endblock %}
+{% block body_class %}login-page{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/login.css' %}">
+{% endblock %}
+
+{% block content %}
+
+    <div class="login-container">
+        <header class="head">
+            <p class="title">QMRank</p>
+            <h2 class="login-title">Login</h2>
+        </header>
+        <div class="login-form">
+            <form method="POST" action="">
+                
+                <!-- Django security token  -->
+                {% csrf_token %}
+
+                <div class="usernamebtn">
+                    <label for="username">👤 Username:</label><br>
+                    <input type="text" id="username" name="username" required>
+                </div>
+
+                <br>
+
+                <div class="passwordbtn">
+                    <label for="password">🔐 Password:</label><br>
+                    <input type="password" id="password" name="password" required>
+                </div>
+
+                <br>
+
+                <button type="submit" class="logbtn">Log In</button>
+
+                <a href="{% url 'signin:register' %}" class="signup">Don't have an account? Sign Up</a>
+            </form>
+        </div>
+    </div>
+{% endblock %}
