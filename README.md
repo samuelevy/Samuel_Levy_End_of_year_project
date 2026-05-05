@@ -75,7 +75,6 @@ Enter the following commands in the terminal (still in the project directory):
 
 `pip install pymysql`
 
-`python manage.py migrate`
 
 # Run the web application
 ## Prerequisites (to do every time you want to run the web application):
